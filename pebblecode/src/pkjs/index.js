@@ -15,7 +15,7 @@ var DESIRED_ON = 1;
 var DEFAULT_ENDPOINT = "http://127.0.0.1:17999";
 var SETTINGS_KEY = "tailtoggle_settings";
 var BUILD_KEY = "tailtoggle_build_label";
-var BUILD_LABEL = "v0.1.0";
+var BUILD_LABEL = "v0.2.0";
 
 function trim(value) {
   return String(value || "").replace(/^\s+|\s+$/g, "");
@@ -165,7 +165,7 @@ function handleCommand(command, desired) {
       return;
     }
     var status = response.status || (response.vpnActive ? "on" : "off");
-    var message = response.message || (response.vpnActive ? "Android VPN is active" : "Android VPN is inactive");
+    var message = response.message || (response.vpnActive ? "Active" : "Inactive");
     sendResult(stateLabel(status), message);
   });
 }

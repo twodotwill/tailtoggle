@@ -3,7 +3,7 @@
   "shortName": "TailToggle",
   "longName": "Tailscale Toggle",
   "companyName": "twodotwill",
-  "versionLabel": "0.1",
+  "versionLabel": "0.2",
   "sdkVersion": "3",
   "enableMultiJS": true,
   "targetPlatforms": [

@@ -25,8 +25,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class TailToggleService extends Service {
     public static final String PREFS = "tailtoggle";
@@ -40,7 +38,7 @@ public class TailToggleService extends Service {
     private static final String ACTION_CONNECT = "com.tailscale.ipn.CONNECT_VPN";
     private static final String ACTION_DISCONNECT = "com.tailscale.ipn.DISCONNECT_VPN";
 
-    private ExecutorService executor;
+    private Thread serverThread;
     private ServerSocket serverSocket;
     private volatile boolean running;
 
@@ -66,8 +64,8 @@ public class TailToggleService extends Service {
             } catch (IOException ignored) {
             }
         }
-        if (executor != null) {
-            executor.shutdownNow();
+        if (serverThread != null) {
+            serverThread.interrupt();
         }
         super.onDestroy();
     }
@@ -78,27 +76,29 @@ public class TailToggleService extends Service {
     }
 
     private void startServer() {
-        executor = Executors.newCachedThreadPool();
         running = true;
-        executor.execute(() -> {
+        serverThread = new Thread(() -> {
             SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
             int port = prefs.getInt(KEY_PORT, DEFAULT_PORT);
             try (ServerSocket socket = new ServerSocket(port, 20, InetAddress.getByName("127.0.0.1"))) {
                 serverSocket = socket;
                 while (running) {
                     Socket client = socket.accept();
-                    executor.execute(() -> handleClient(client));
+                    handleClient(client);
                 }
             } catch (IOException ignored) {
                 running = false;
             }
-        });
+        }, "TailToggleBridge");
+        serverThread.setPriority(Thread.MIN_PRIORITY);
+        serverThread.start();
     }
 
     private void handleClient(Socket client) {
         try (Socket socket = client;
              BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
              OutputStream output = socket.getOutputStream()) {
+            socket.setSoTimeout(5000);
             String requestLine = reader.readLine();
             if (requestLine == null || requestLine.length() == 0) {
                 return;
@@ -170,14 +170,14 @@ public class TailToggleService extends Service {
         boolean installed = isTailscaleInstalled(this);
         String message;
         if ("sent_connect".equals(status)) {
-            message = "Tailscale connect intent sent";
+            message = "Connect sent";
         } else if ("sent_disconnect".equals(status)) {
-            message = "Tailscale disconnect intent sent";
+            message = "Disconnect sent";
         } else if (vpnActive) {
-            message = "Android reports a VPN is active";
+            message = "Active";
             status = "on";
         } else {
-            message = "Android reports no active VPN";
+            message = "Inactive";
             status = "off";
         }
         String body = "{"
@@ -251,7 +251,7 @@ public class TailToggleService extends Service {
         NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID,
                 getString(R.string.notification_channel),
-                NotificationManager.IMPORTANCE_LOW);
+                NotificationManager.IMPORTANCE_MIN);
         NotificationManager manager = getSystemService(NotificationManager.class);
         if (manager != null) {
             manager.createNotificationChannel(channel);
@@ -273,7 +273,10 @@ public class TailToggleService extends Service {
                 .setContentText("Listening on 127.0.0.1")
                 .setSmallIcon(R.drawable.ic_tailtoggle)
                 .setContentIntent(pendingIntent)
+                .setLocalOnly(true)
                 .setOngoing(true)
+                .setOnlyAlertOnce(true)
+                .setShowWhen(false)
                 .build();
     }
 

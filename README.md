@@ -68,7 +68,7 @@ Or install the copied artifact directly:
 adb install -r dist/tailtoggle-companion-debug.apk
 ```
 
-Open **TailToggle Companion** once after installing. It starts a foreground service listening on:
+Open **TailToggle Companion** once after installing. It starts a quiet foreground service listening on:
 
 ```text
 http://127.0.0.1:17999
@@ -81,5 +81,11 @@ The Pebble app settings use that endpoint by default. You can set a shared token
 - `SELECT`: toggle based on whether Android reports an active VPN.
 - `UP`: send Tailscale connect intent.
 - `DOWN`: send Tailscale disconnect intent.
+
+The watch app does not vibrate and does not poll in the background. It checks status when opened and when you press a button.
+
+## Battery Use
+
+The Android companion is passive while idle: it keeps one low-priority localhost listener thread open and does not poll Tailscale, hold wake locks, or run timers. The Pebble app also avoids periodic refreshes, so phone work only happens on app open or button presses.
 
 The status display is based on Android's public VPN transport state. Android does not expose a clean public API for confirming that the active VPN is specifically Tailscale, so the app reports whether any Android VPN is active plus whether the Tailscale package is installed.
