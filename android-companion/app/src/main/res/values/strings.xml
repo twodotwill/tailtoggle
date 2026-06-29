@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">TailToggle Companion</string>
+    <string name="notification_channel">TailToggle Bridge</string>
+    <string name="notification_title">TailToggle bridge running</string>
+</resources>

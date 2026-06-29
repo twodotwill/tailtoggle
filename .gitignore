@@ -1,0 +1,8 @@
+android-companion/.gradle/
+android-companion/local.properties
+android-companion/app/build/
+android-companion/build/
+android-sdk/
+.android-sdk-tmp/
+pebblecode/build/
+pebblecode/.lock-waf_*_build

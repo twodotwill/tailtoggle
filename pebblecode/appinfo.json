@@ -1,0 +1,30 @@
+{
+  "uuid": "6fca8181-2e4f-4c30-a4fc-b11c476dd4b9",
+  "shortName": "TailToggle",
+  "longName": "Tailscale Toggle",
+  "companyName": "twodotwill",
+  "versionLabel": "0.1",
+  "sdkVersion": "3",
+  "enableMultiJS": true,
+  "targetPlatforms": [
+    "basalt",
+    "chalk",
+    "diorite",
+    "emery"
+  ],
+  "watchapp": {
+    "watchface": false
+  },
+  "appKeys": {
+    "cmd": 0,
+    "state": 1,
+    "message": 2,
+    "desired": 3
+  },
+  "resources": {
+    "media": []
+  },
+  "capabilities": [
+    "configurable"
+  ]
+}
